@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantiz'26 War Room Decision Clock</title>
+<style>
+:root{--bg:#f7f7f5;--panel:#fff;--ink:#111827;--muted:#64748b;--line:#d9dee5;--red:#a70d17;--red2:#7f1017;--green:#147a4b;--amber:#b86b09;--navy:#17212b;}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1540px;margin:auto;padding:18px} .top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}
+h1{font-family:Georgia,serif;font-size:34px;margin:0;line-height:1.05} .kicker{letter-spacing:.16em;font-size:12px;color:var(--red);font-weight:800}
+.sub{color:var(--muted);margin-top:6px} .badge{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-weight:700}
+.customer-strip{display:grid;grid-template-columns:1.45fr 1.15fr 1fr 1.1fr 1fr 1.05fr;gap:8px;margin:12px 0 8px}
+.custbox{min-height:92px;padding:12px;border-radius:13px;border:1px solid transparent;position:relative;overflow:hidden}
+.custbox:after{content:"";position:absolute;right:-18px;bottom:-24px;width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.22)}
+.custbox b{display:block;font-size:10px;letter-spacing:.10em;text-transform:uppercase;opacity:.82}
+.custbox span{display:block;margin-top:8px;font-size:18px;line-height:1.08;font-weight:900;color:inherit}
+.custbox small{display:block;margin-top:5px;font-size:11px;line-height:1.25;opacity:.84}
+.custbox.c1{background:#17212b;color:#fff;border-color:#17212b}
+.custbox.c2{background:#e7f1f8;color:#173b5c;border-color:#c5dbe9}
+.custbox.c3{background:#fce7e9;color:#8f0c17;border-color:#f2c3c8}
+.custbox.c4{background:#fff3dc;color:#7c4a03;border-color:#f2d39c}
+.custbox.c5{background:#e9f8ef;color:#145f3b;border-color:#c6e8d4}
+.custbox.c6{background:#eee9fb;color:#4b2f80;border-color:#d8cff1}
+.diagnostic-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 16px}
+.diag{background:#fff;border:1px solid var(--line);padding:9px 11px;border-radius:11px}
+.diag b{display:block;font-size:12px}
+.diag span{display:block;margin-top:3px;font-size:11px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.05fr 1.2fr .95fr;gap:14px} .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-size:15px;letter-spacing:.12em;margin:0 0 12px;text-transform:uppercase} label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px;color:#475569}
+select,input[type=number],input[type=range]{width:100%} select,input[type=number]{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;font-size:15px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px} .mini{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+.mini .v{font-size:20px;font-weight:800} .mini .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tag{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800} .green{background:#eaf8f1;color:var(--green)} .red{background:#fdecec;color:var(--red)} .amber{background:#fff4df;color:var(--amber)} .dark{background:#eef2f5;color:#24313d}
+.gate{display:flex;gap:8px;align-items:flex-start;padding:9px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;background:#fafafa} .gate input{margin-top:3px} .gate b{font-size:13px} .gate small{color:var(--muted)}
+.route-list{display:grid;gap:8px} .route{border:1px solid var(--line);border-radius:12px;padding:10px} .route-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.route h3{margin:0;font-size:15px} .route small{color:var(--muted)} .toggle{display:flex;align-items:center;gap:8px} .toggle input{width:auto}
+.run{width:100%;border:0;border-radius:11px;background:var(--red);color:#fff;padding:14px;font-weight:900;font-size:16px;cursor:pointer;margin-top:12px}
+.run:hover{background:var(--red2)} .lens{display:flex;flex-wrap:wrap;gap:8px} .lens button{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:10px;font-weight:800;cursor:pointer}
+.lens button.active{background:var(--red);color:#fff;border-color:var(--red)}
+.results{margin-top:14px} .result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px} .metric{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px} .metric .n{font-size:18px;font-weight:900}
+.table-wrap{overflow:auto;margin-top:12px} table{border-collapse:collapse;width:100%;font-size:12px} th,td{border-bottom:1px solid #e5e7eb;padding:8px;text-align:right;white-space:nowrap} th:first-child,td:first-child{text-align:left} th{background:#f5f7f9;position:sticky;top:0}
+.decision{margin-top:12px;background:linear-gradient(90deg,#fff6f6,#fff);border-left:5px solid var(--red);padding:14px;border-radius:10px} .decision h3{margin:0 0 5px;font-family:Georgia,serif;font-size:22px}
+.note{font-size:12px;color:var(--muted);line-height:1.45} .hr{height:1px;background:var(--line);margin:12px 0}
+footer{margin-top:16px;font-size:11px;color:var(--muted)} .hidden{display:none}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.customer-strip{grid-template-columns:repeat(3,1fr)}.diagnostic-strip{grid-template-columns:repeat(3,1fr)}.result-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.wrap{padding:10px}.customer-strip{grid-template-columns:1fr 1fr}.diagnostic-strip{grid-template-columns:1fr 1fr}.row2{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr}h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <div><div class="kicker">WAR ROOM MASTERPLAN · STRAIT OUTTA HORMUZ</div><h1>Decision Clock — From disruption to a defensible action.</h1><div class="sub">WHO to protect → CAN it dispatch → HOW should it move?</div></div>
+  <div class="badge">Case-backed · 243 shipments</div>
+</div>
+
+<div class="customer-strip">
+  <div class="custbox c1"><b>Customer</b><span id="topCustomer">—</span><small id="topSince">—</small></div>
+  <div class="custbox c2"><b>Auto Product</b><span id="topProduct">—</span><small>Case-linked customer product</small></div>
+  <div class="custbox c3"><b>Strategic Exposure</b><span id="storyConc">—</span><small id="topTier">—</small></div>
+  <div class="custbox c4"><b>Customer Economics</b><span id="topMargin">—</span><small id="topMarginPct">—</small></div>
+  <div class="custbox c5"><b>Service History</b><span id="topService">—</span><small id="topDelay">—</small></div>
+  <div class="custbox c6"><b>Revenue at Risk</b><span id="topRAR">—</span><small>Case-observed customer exposure</small></div>
+</div>
+
+<div class="diagnostic-strip">
+  <div class="diag"><b>02 Margin pressure</b><span>Cost + service deterioration</span></div>
+  <div class="diag"><b>03 Interactions</b><span>Customer × product × route × time</span></div>
+  <div class="diag"><b>04 Tactical vs structural</b><span>Immediate move vs network redesign</span></div>
+  <div class="diag"><b>05 Scarce capacity</b><span>Protect highest value per constraint</span></div>
+  <div class="diag"><b>06 Future contract</b><span>Pass-through + reopener logic</span></div>
+</div>
+
+<div class="grid">
+  <section class="card">
+    <h2>1 · Shipment & commercial context</h2>
+    <label>Customer</label><select id="customer"></select>
+    <label>Product — auto-fetched from case</label><input id="product" type="text" disabled>
+    <div class="row2">
+      <div><label>Cargo weight (tons)</label><input id="weight" type="number" min="0" step="0.1"></div>
+      <div><label>Cargo value (USD)</label><input id="cargoValue" type="number" min="0" step="1"></div>
+    </div>
+    <label>Contracted freight revenue (USD)</label><input id="revenue" type="number" min="0" step="1">
+    <label>Shipment status</label>
+    <select id="status"><option value="moving">Moving / ready to dispatch</option><option value="held">Already held in Gulf</option></select>
+    <div id="heldBox" class="hidden"><label>Days already held</label><input id="heldDays" type="number" min="0" step="1" value="0"></div>
+    <label>Customer disruption-cost pass-through</label><input id="pass" type="range" min="0" max="100" value="0"><div class="note"><span id="passVal">0%</span> of incremental disruption cost recovered.</div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Hard gates first</h2>
+    <div class="gate"><input id="safe" type="checkbox" checked><div><b>Safe & secure</b><br><small>Corridor / operating risk accepted.</small></div></div>
+    <div class="gate"><input id="sanctions" type="checkbox" checked><div><b>Sanctions / counterparty clear</b><br><small>No unresolved trade-compliance block.</small></div></div>
+    <div class="gate"><input id="insurance" type="checkbox" checked><div><b>Insurance approved</b><br><small>Cover remains valid for movement.</small></div></div>
+    <div class="gate"><input id="cargoComp" type="checkbox" checked><div><b>Cargo / regulatory compliant</b><br><small>Mode is allowed for cargo and route.</small></div></div>
+    <div class="hr"></div>
+    <h2>3 · Product-route feasibility & capacity</h2>
+    <div id="routes" class="route-list"></div>
+    <div class="hr"></div>
+    <h2>4 · Parcel / load readiness</h2>
+    <div class="row2">
+      <div class="mini"><div class="l">Observed operating band</div><div id="band" class="v" style="font-size:15px">—</div></div>
+      <div class="mini"><div class="l">Dispatch readiness</div><div id="readiness" class="v" style="font-size:15px">—</div></div>
+    </div>
+    <label>Compatible cargo pool available (tons)</label><input id="pool" type="number" min="0" value="0">
+    <div class="note">For bulk products this supports parcel/load readiness. For container/shared-capacity products it is treated as consolidation availability, not whole-vessel filling.</div>
+  </section>
+
+  <section class="card">
+    <h2>5 · Stress the disruption</h2>
+    <label>Freight rate shock</label><input id="freightShock" type="range" min="0" max="100" value="0"><div class="note"><span id="freightVal">0%</span></div>
+    <label>Fuel cost shock</label><input id="fuelShock" type="range" min="0" max="100" value="0"><div class="note"><span id="fuelVal">0%</span></div>
+    <label>Insurance premium shock</label><input id="insShock" type="range" min="0" max="150" value="0"><div class="note"><span id="insVal">0%</span></div>
+    <label>Additional delay</label><input id="delayShock" type="range" min="0" max="20" value="0"><div class="note"><span id="delayVal">0 d</span></div>
+    <div class="hr"></div>
+    <h2>6 · Management lens</h2>
+    <div class="lens" id="lens">
+      <button type="button" data-lens="balanced" class="active">Balanced</button>
+      <button type="button" data-lens="profit">Profit</button>
+      <button type="button" data-lens="service">Service</button>
+      <button type="button" data-lens="resilience">Resilience</button>
+      <button type="button" data-lens="cash">Cash</button>
+    </div>
+    <button id="run" class="run">RUN WAR ROOM SCENARIO</button>
+    <div class="note" style="margin-top:10px">Route economics use case-observed weighted Product × Route values. Unsupported routes are never given invented economics.</div>
+  </section>
+</div>
+
+<section class="card results">
+  <h2>Decision output · opportunity cost + premium benefit visible</h2>
+  <div class="note" id="scenarioLine" style="margin-bottom:10px;font-weight:700;color:#334155">Run a scenario to compare feasible alternatives.</div>
+  <div class="table-wrap"><table id="resultTable"><thead><tr><th>Alternative</th><th>Scenario cost</th><th>Cost/t</th><th>Revised revenue</th><th>Margin</th><th>Margin %</th><th>Obs. DIFOT</th><th>Delay</th><th>Premium / cargo value</th><th>What premium buys</th><th>Break-even value of time</th><th>Premium decision</th><th>Pareto</th><th>Score</th></tr></thead><tbody></tbody></table></div>
+  <div id="decision" class="decision"><h3>Run a scenario</h3><div class="note">The engine first removes unsafe/infeasible actions, then compares only case-valid alternatives.</div></div>
+  <div id="premiumPanel" class="decision" style="border-left-color:#1f2937;background:linear-gradient(90deg,#f8fafc,#fff);">
+    <h3>Premium logic</h3>
+    <div class="note"><b>Qualitative advantage of paying a premium:</b> it can buy faster delivery, stronger service continuity, corridor avoidance, scarce-capacity access or optionality. The simulator quantifies only benefits supported by the case (for example observed time / DIFOT); all other benefits remain management considerations, not invented numbers.</div>
+  </div>
+</section>
+
+<footer>Source: Quantiz'26 cleaned dataset / calculation audit workbook. Observed DIFOT and delay are historical case benchmarks, not guaranteed forecasts. The simulator is a management decision-support model, not an autonomous routing instruction.</footer>
+</div>
+
+<script>
+const DATA={"customers":{"Meridian Energy Partners":{"product":"Crude Oil","shipments":28,"revenue":66106573.77,"concentration":0.5833957749045076,"tier":"STRATEGIC CORE","margin":-101087753.69999999,"marginPct":-1.5291634089479145,"difot":0.5714285714285714,"avgDelay":4.678571428571429,"rar":11217929.52,"since":2014},"Zenith Crude Traders":{"product":"Crude Oil","shipments":10,"revenue":22705394.55,"concentration":0.20037691401306806,"tier":"STRATEGIC CORE","margin":-27063142.34,"marginPct":-1.1919256580370676,"difot":0.5,"avgDelay":7.6,"rar":9768479.11,"since":2011},"Pacific Rim Petrochem":{"product":"Refined Petrochemicals","shipments":16,"revenue":9223656.08,"concentration":0.08139949901149252,"tier":"STRATEGIC CORE","margin":-20735705.42,"marginPct":-2.2481004538928993,"difot":0.625,"avgDelay":5.875,"rar":1811242.99,"since":2019},"Baltic Fuel Alliance":{"product":"Refined Petrochemicals","shipments":13,"revenue":7367746.59,"concentration":0.0650209500514716,"tier":"STRATEGIC CORE","margin":-6684972.1899999995,"marginPct":-0.9073292774582248,"difot":0.6923076923076923,"avgDelay":7.6923076923076925,"rar":1731908.81,"since":2010},"Nordholm Refining Group":{"product":"Refined Petrochemicals","shipments":11,"revenue":6201783.79,"concentration":0.05473123554316168,"tier":"STRATEGIC CORE","margin":-6909487.7,"marginPct":-1.11411296071642,"difot":0.6363636363636364,"avgDelay":4.363636363636363,"rar":1022288.3300000001,"since":2016},"Deccan Industrial Works":{"product":"Industrial Machinery","shipments":27,"revenue":301170.72,"concentration":0.002657855574004716,"tier":"LONG TAIL","margin":-122152.70000000001,"marginPct":-0.4055928810078218,"difot":0.5555555555555556,"avgDelay":9.592592592592593,"rar":86475.18,"since":2012},"Falcon Heavy Equipment":{"product":"Industrial Machinery","shipments":26,"revenue":278170,"concentration":0.0024548723893906147,"tier":"LONG TAIL","margin":-81624,"marginPct":-0.2934320739116368,"difot":0.6153846153846154,"avgDelay":4.884615384615385,"rar":63817.33,"since":2016},"Vantage Pharma Logistics":{"product":"Pharmaceuticals","shipments":20,"revenue":244874.65,"concentration":0.0021610382756828217,"tier":"LONG TAIL","margin":-48926.26999999999,"marginPct":-0.19980128608657527,"difot":0.8,"avgDelay":3.9,"rar":50891.66,"since":2015},"Carrow Life Sciences":{"product":"Pharmaceuticals","shipments":15,"revenue":184587.98,"concentration":0.0016290036147513644,"tier":"LONG TAIL","margin":-259025.50000000003,"marginPct":-1.4032630943791682,"difot":0.8,"avgDelay":6.8,"rar":38440.57,"since":2020},"Kestrel Semiconductor Supply":{"product":"High-Tech Components","shipments":17,"revenue":180370.83,"concentration":0.0015917869303608166,"tier":"LONG TAIL","margin":-400308.5800000001,"marginPct":-2.219364295213367,"difot":0.8235294117647058,"avgDelay":2.6470588235294117,"rar":28868.79,"since":2021},"Novastar Electronics":{"product":"High-Tech Components","shipments":10,"revenue":125375.98,"concentration":0.0011064530021022752,"tier":"LONG TAIL","margin":-166383.44,"marginPct":-1.327075888060855,"difot":0.8,"avgDelay":5.7,"rar":20898.3,"since":2022},"Coral Bay Consumer Brands":{"product":"Consumer Goods","shipments":17,"revenue":118423.02,"concentration":0.0010450925767201804,"tier":"LONG TAIL","margin":-33130.80999999998,"marginPct":-0.2797666365880551,"difot":0.7058823529411765,"avgDelay":7.176470588235294,"rar":25062.63,"since":2019},"Atlas Components Inc.":{"product":"High-Tech Components","shipments":10,"revenue":109400.45999999999,"concentration":0.0009654677666198093,"tier":"LONG TAIL","margin":-49174.890000000014,"marginPct":-0.4494943622723343,"difot":0.9,"avgDelay":3.4,"rar":10445.48,"since":2018},"Harborline Consumer Co.":{"product":"Consumer Goods","shipments":12,"revenue":84723.81,"concentration":0.0007476943663694016,"tier":"LONG TAIL","margin":-33432.740000000005,"marginPct":-0.3946085521885761,"difot":0.6666666666666666,"avgDelay":1.9166666666666667,"rar":13655.349999999999,"since":2013},"Solvane Retail Group":{"product":"Consumer Goods","shipments":11,"revenue":81173.43,"concentration":0.0007163619802966956,"tier":"LONG TAIL","margin":-20312.160000000003,"marginPct":-0.2502316336761919,"difot":0.6363636363636364,"avgDelay":10.545454545454545,"rar":33875.78,"since":2017}},"econ":{"Crude Oil":{"Direct (Pre-Blockade)":{"shipments":4,"weight":1091092.0999999999,"cargoValue":73674114.50999999,"revenue":9029369.77,"recognizedRevenue":9029369.77,"freight":3247367.0300000003,"fuel":3969004.16,"insurance":294696.47,"penalty":220736.51,"cost":7731804.17,"margin":1297565.5999999996,"marginPct":0.14370500190513294,"costPerTon":7.086298370229242,"revenuePerTon":8.275533999375488,"cargoValuePerTon":67.52327737502637,"freightPerTon":2.9762538194530057,"fuelPerTon":3.6376435683110535,"insurancePerTon":0.2700931204615999,"penaltyPerTon":0.20230786200358342,"avgDelay":0.75,"difot":1,"p25":265911.175,"median":279889.55,"p75":286751.4,"status":"PRE-CRISIS BENCHMARK"},"Cape of Good Hope":{"shipments":10,"weight":2774175.6,"cargoValue":198940283.76,"revenue":22952455.17,"recognizedRevenue":22952455.17,"freight":17285775.81,"fuel":21127059.32,"insurance":3716094.36,"penalty":1187313.47,"cost":43316242.96,"margin":-20363787.79,"marginPct":-0.8872161012481349,"costPerTon":15.614095574916021,"revenuePerTon":8.273612950095877,"cargoValuePerTon":71.71149647484462,"freightPerTon":6.230959500184486,"fuelPerTon":7.615617165690593,"insurancePerTon":1.339531052035783,"penaltyPerTon":0.42798785700515857,"avgDelay":1.5,"difot":0.8,"p25":269866.32499999995,"median":277676.44999999995,"p75":287198.60000000003,"status":"CRISIS ROUTE"},"Pipeline Bypass":{"shipments":15,"weight":4382746.3,"cargoValue":304977191.39,"revenue":35843734.75,"recognizedRevenue":35843734.75,"freight":61798792.96,"fuel":75531858.06,"insurance":2589314.44,"penalty":2392095.85,"cost":142312061.31,"margin":-106468326.56,"marginPct":-2.9703469044893542,"costPerTon":32.47097859851026,"revenuePerTon":8.178373169809076,"cargoValuePerTon":69.58586477843812,"freightPerTon":14.100472336260943,"fuelPerTon":17.23391063270078,"insurancePerTon":0.5907972450972122,"penaltyPerTon":0.54579838445132,"avgDelay":2,"difot":0.6,"p25":286302.55000000005,"median":297066.9,"p75":303963.65,"status":"CRISIS ROUTE"},"Held in Gulf":{"shipments":9,"weight":2529920.1,"cargoValue":167849402.57999998,"revenue":20986408.63,"recognizedRevenue":0,"freight":503548.20999999996,"fuel":2508497.39,"insurance":3396593.56,"penalty":17194116.76,"cost":23602755.92,"margin":-2616347.290000003,"marginPct":-0.1246686527517597,"costPerTon":9.329447171078645,"revenuePerTon":8.2952851475428,"cargoValuePerTon":66.34573264981766,"freightPerTon":0.19903719884276186,"fuelPerTon":0.9915322582717138,"insurancePerTon":1.3425694985387087,"penaltyPerTon":6.7963082154254595,"avgDelay":17.666666666666668,"difot":0,"p25":273358.7,"median":280640.1,"p75":302557.2,"status":"STATE / NOT A ROUTE"}},"Refined Petrochemicals":{"Direct (Pre-Blockade)":{"shipments":13,"weight":927704.4,"cargoValue":93479523.83,"revenue":7686330.4,"recognizedRevenue":7686330.4,"freight":2730766.41,"fuel":3337603.37,"insurance":373918.1,"penalty":200915.27,"cost":6643203.149999999,"margin":1043127.2500000009,"marginPct":0.13571199723602836,"costPerTon":7.160905079247225,"revenuePerTon":8.285322781696411,"cargoValuePerTon":100.7643424241601,"freightPerTon":2.943573847445372,"fuelPerTon":3.5977013475413075,"insurancePerTon":0.4030573747413508,"penaltyPerTon":0.21657250951919596,"avgDelay":0.46153846153846156,"difot":1,"p25":66542.2,"median":73926.1,"p75":81211,"status":"PRE-CRISIS BENCHMARK"},"Cape of Good Hope":{"shipments":10,"weight":714515,"cargoValue":70730419.5,"revenue":5959884.6,"recognizedRevenue":5959884.6,"freight":4489144.1,"fuel":5486731.68,"insurance":1192507.22,"penalty":584891.36,"cost":11753274.36,"margin":-5793389.76,"marginPct":-0.9720640832542294,"costPerTon":16.449303877455336,"revenuePerTon":8.341160927342322,"cargoValuePerTon":98.99081124958889,"freightPerTon":6.282784966025905,"fuelPerTon":7.678959406030664,"insurancePerTon":1.6689743672281196,"penaltyPerTon":0.8185851381706472,"avgDelay":2,"difot":0.7,"p25":66516.4,"median":71450.75,"p75":79866.275,"status":"CRISIS ROUTE"},"Pipeline Bypass":{"shipments":9,"weight":557157.1,"cargoValue":53375236.38,"revenue":4581531.33,"recognizedRevenue":4581531.33,"freight":12421801.9,"fuel":15182202.3,"insurance":552319.17,"penalty":315981.31,"cost":28472304.68,"margin":-23890773.35,"marginPct":-5.214582555304713,"costPerTon":51.102830207135476,"revenuePerTon":8.22305114661556,"cargoValuePerTon":95.79925730103773,"freightPerTon":22.294971920846024,"fuelPerTon":27.249410085593457,"insurancePerTon":0.9913167578767282,"penaltyPerTon":0.5671314428192695,"avgDelay":1.4444444444444444,"difot":0.6666666666666666,"p25":55269,"median":64323.6,"p75":72182.6,"status":"CRISIS ROUTE"},"Held in Gulf":{"shipments":8,"weight":573515.9,"cargoValue":58813313.61,"revenue":4565440.13,"recognizedRevenue":0,"freight":176439.94,"fuel":549063.51,"insurance":1042162.05,"penalty":8486904.08,"cost":10254569.58,"margin":-5689129.45,"marginPct":-1.2461294613450555,"costPerTon":17.88018358340196,"revenuePerTon":7.960442125492945,"cargoValuePerTon":102.54870633926626,"freightPerTon":0.30764611757058524,"fuelPerTon":0.9573640591307059,"insurancePerTon":1.817145871631458,"penaltyPerTon":14.79802753506921,"avgDelay":25.375,"difot":0,"p25":56333.725000000006,"median":77738,"p75":85489.85,"status":"STATE / NOT A ROUTE"}},"High-Tech Components":{"Direct (Pre-Blockade)":{"shipments":13,"weight":144,"cargoValue":1184930.96,"revenue":143406.13999999998,"recognizedRevenue":143406.13999999998,"freight":49601.6,"fuel":60624.18,"insurance":4739.7300000000005,"penalty":2368.49,"cost":117334,"margin":26072.139999999985,"marginPct":0.1818063020174728,"costPerTon":814.8194444444445,"revenuePerTon":995.8759722222221,"cargoValuePerTon":8228.687222222223,"freightPerTon":344.4555555555555,"fuelPerTon":421.00125,"insurancePerTon":32.91479166666667,"penaltyPerTon":16.447847222222222,"avgDelay":0.5384615384615384,"difot":1,"p25":9.8,"median":11.2,"p75":11.9,"status":"PRE-CRISIS BENCHMARK"},"Overland Truck":{"shipments":6,"weight":67.2,"cargoValue":508253.01,"revenue":60987.22,"recognizedRevenue":60987.22,"freight":14689.6,"fuel":17953.97,"insurance":4391.46,"penalty":1000.59,"cost":38035.619999999995,"margin":22951.600000000006,"marginPct":0.3763345828847422,"costPerTon":566.0062499999999,"revenuePerTon":907.5479166666667,"cargoValuePerTon":7563.288839285714,"freightPerTon":218.5952380952381,"fuelPerTon":267.1721726190476,"insurancePerTon":65.34910714285714,"penaltyPerTon":14.889732142857143,"avgDelay":0.5,"difot":1,"p25":10.325,"median":11.1,"p75":12.175,"status":"CRISIS ROUTE"},"Air Bridge":{"shipments":12,"weight":140.3,"cargoValue":1271236.87,"revenue":150541.34,"recognizedRevenue":150541.34,"freight":351413.2,"fuel":429505.02,"insurance":6696.68,"penalty":0,"cost":787614.9,"margin":-637073.56,"marginPct":-4.231884477712236,"costPerTon":5613.791161796151,"revenuePerTon":1072.9960085531004,"cargoValuePerTon":9060.847255880257,"freightPerTon":2504.727013542409,"fuelPerTon":3061.3330007127583,"insurancePerTon":47.731147540983606,"penaltyPerTon":0,"avgDelay":0,"difot":1,"p25":10.350000000000001,"median":11.15,"p75":13.299999999999999,"status":"CRISIS ROUTE"},"Held in Gulf":{"shipments":6,"weight":61.8,"cargoValue":546723,"revenue":60212.57,"recognizedRevenue":0,"freight":1640.16,"fuel":6120,"insurance":9949.4,"penalty":70320.09999999999,"cost":88029.66,"margin":-27817.090000000004,"marginPct":-0.46198144340957387,"costPerTon":1424.428155339806,"revenuePerTon":974.313430420712,"cargoValuePerTon":8846.650485436894,"freightPerTon":26.53980582524272,"fuelPerTon":99.02912621359224,"insurancePerTon":160.9935275080906,"penaltyPerTon":1137.8656957928802,"avgDelay":21,"difot":0,"p25":9.9,"median":10.3,"p75":10.775,"status":"STATE / NOT A ROUTE"}},"Pharmaceuticals":{"Direct (Pre-Blockade)":{"shipments":5,"weight":43.2,"cargoValue":387716.1,"revenue":59635.130000000005,"recognizedRevenue":59635.130000000005,"freight":20603.48,"fuel":25182.04,"insurance":1550.86,"penalty":319.52,"cost":47655.9,"margin":11979.230000000003,"marginPct":0.20087539005951696,"costPerTon":1103.1458333333333,"revenuePerTon":1380.442824074074,"cargoValuePerTon":8974.90972222222,"freightPerTon":476.93240740740737,"fuelPerTon":582.9175925925925,"insurancePerTon":35.899537037037035,"penaltyPerTon":7.3962962962962955,"avgDelay":0.2,"difot":1,"p25":7.3,"median":9.2,"p75":9.9,"status":"PRE-CRISIS BENCHMARK"},"Overland Truck":{"shipments":13,"weight":110.8,"cargoValue":1017297.73,"revenue":159710.9,"recognizedRevenue":159710.9,"freight":32731.9,"fuel":40005.65,"insurance":8992.14,"penalty":1878.28,"cost":83607.97,"margin":76102.93,"marginPct":0.4765042962001967,"costPerTon":754.5845667870036,"revenuePerTon":1441.4341155234656,"cargoValuePerTon":9181.387454873646,"freightPerTon":295.41425992779784,"fuelPerTon":361.0618231046932,"insurancePerTon":81.15649819494584,"penaltyPerTon":16.951985559566786,"avgDelay":0.46153846153846156,"difot":1,"p25":7.5,"median":8,"p75":9.1,"status":"CRISIS ROUTE"},"Air Bridge":{"shipments":10,"weight":89.9,"cargoValue":773775.78,"revenue":120784.37,"recognizedRevenue":120784.37,"freight":225539.15,"fuel":275658.96,"insurance":3426.39,"penalty":0,"cost":504624.5,"margin":-383840.13,"marginPct":-3.177895699584309,"costPerTon":5613.17575083426,"revenuePerTon":1343.5413793103446,"cargoValuePerTon":8607.072080088987,"freightPerTon":2508.77808676307,"fuelPerTon":3066.284315906563,"insurancePerTon":38.11334816462736,"penaltyPerTon":0,"avgDelay":0,"difot":1,"p25":8.35,"median":9.100000000000001,"p75":9.899999999999999,"status":"CRISIS ROUTE"},"Held in Gulf":{"shipments":7,"weight":60.1,"cargoValue":538480.85,"revenue":89332.23,"recognizedRevenue":0,"freight":1615.45,"fuel":7056,"insurance":9259.97,"penalty":83594.61,"cost":101526.03,"margin":-12193.800000000003,"marginPct":-0.1364994470640664,"costPerTon":1689.2850249584026,"revenuePerTon":1486.3931780366056,"cargoValuePerTon":8959.747920133112,"freightPerTon":26.87936772046589,"fuelPerTon":117.40432612312812,"insurancePerTon":154.07603993344424,"penaltyPerTon":1390.9252911813644,"avgDelay":24.714285714285715,"difot":0,"p25":7.4,"median":8.8,"p75":9.75,"status":"STATE / NOT A ROUTE"}},"Consumer Goods":{"Direct (Pre-Blockade)":{"shipments":7,"weight":138.20000000000002,"cargoValue":206517.78,"revenue":51219.61,"recognizedRevenue":51219.61,"freight":19079.11,"fuel":23318.9,"insurance":826.07,"penalty":543.26,"cost":43767.34,"margin":7452.270000000004,"marginPct":0.14549642217111775,"costPerTon":316.69565846599124,"revenuePerTon":370.6194645441389,"cargoValuePerTon":1494.3399421128797,"freightPerTon":138.05434153400867,"fuelPerTon":168.73299565846597,"insurancePerTon":5.977351664254703,"penaltyPerTon":3.930969609261939,"avgDelay":0.5714285714285714,"difot":1,"p25":17.25,"median":20,"p75":22.3,"status":"PRE-CRISIS BENCHMARK"},"Cape of Good Hope":{"shipments":12,"weight":215.4,"cargoValue":282003.67,"revenue":85065.33,"recognizedRevenue":85065.33,"freight":63113.9,"fuel":77139.20999999999,"insurance":4937.54,"penalty":1656.48,"cost":146847.13,"margin":-61781.8,"marginPct":-0.7262864906302016,"costPerTon":681.7415506035284,"revenuePerTon":394.91796657381616,"cargoValuePerTon":1309.2092386258123,"freightPerTon":293.0078922934076,"fuelPerTon":358.12075208913643,"insurancePerTon":22.922655524605386,"penaltyPerTon":7.69025069637883,"avgDelay":1.5,"difot":0.75,"p25":15.575,"median":17.299999999999997,"p75":19.450000000000003,"status":"CRISIS ROUTE"},"Overland Truck":{"shipments":11,"weight":207.4,"cargoValue":267002.1,"revenue":75441.56,"recognizedRevenue":75441.56,"freight":50056.13,"fuel":61179.71,"insurance":2255.31,"penalty":287.93,"cost":113779.08,"margin":-38337.520000000004,"marginPct":-0.5081750695505237,"costPerTon":548.597299903568,"revenuePerTon":363.7490838958534,"cargoValuePerTon":1287.3775313404049,"freightPerTon":241.35067502410797,"fuelPerTon":294.9841369334619,"insurancePerTon":10.87420443587271,"penaltyPerTon":1.3882835101253617,"avgDelay":0.2727272727272727,"difot":1,"p25":16,"median":18.3,"p75":21.75,"status":"CRISIS ROUTE"},"Held in Gulf":{"shipments":10,"weight":212.3,"cargoValue":260980.44,"revenue":72593.76,"recognizedRevenue":0,"freight":782.93,"fuel":23292,"insurance":4646.71,"penalty":38080.78,"cost":66802.42,"margin":5791.3399999999965,"marginPct":0.07977738031478183,"costPerTon":314.66048045219026,"revenuePerTon":341.93951954780965,"cargoValuePerTon":1229.3002355157796,"freightPerTon":3.6878473857748464,"fuelPerTon":109.71267074894017,"insurancePerTon":21.887470560527554,"penaltyPerTon":179.3724917569477,"avgDelay":23.6,"difot":0,"p25":20.2,"median":21.8,"p75":22.625,"status":"STATE / NOT A ROUTE"}},"Industrial Machinery":{"Direct (Pre-Blockade)":{"shipments":9,"weight":213.9,"cargoValue":607952.3,"revenue":96560.83,"recognizedRevenue":96560.83,"freight":35857.12,"fuel":43825.36,"insurance":2431.81,"penalty":1712.8100000000002,"cost":83827.1,"margin":12733.729999999996,"marginPct":0.13187262371294858,"costPerTon":391.8985507246377,"revenuePerTon":451.42978027115475,"cargoValuePerTon":2842.226741467976,"freightPerTon":167.63496961196822,"fuelPerTon":204.88714352501168,"insurancePerTon":11.368910705937353,"penaltyPerTon":8.00752688172043,"avgDelay":0.6666666666666666,"difot":1,"p25":22.2,"median":23,"p75":24.2,"status":"PRE-CRISIS BENCHMARK"},"Cape of Good Hope":{"shipments":17,"weight":414.2,"cargoValue":1267647.76,"revenue":195369.22,"recognizedRevenue":195369.22,"freight":131095.69999999998,"fuel":160228.08000000002,"insurance":20203.31,"penalty":12043.289999999999,"cost":323570.38,"margin":-128201.16,"marginPct":-0.6561993747019106,"costPerTon":781.1935779816514,"revenuePerTon":471.6784645098986,"cargoValuePerTon":3060.472621921777,"freightPerTon":316.5033800096571,"fuelPerTon":386.8374698213424,"insurancePerTon":48.77670207629165,"penaltyPerTon":29.07602607436021,"avgDelay":2.411764705882353,"difot":0.5294117647058824,"p25":21.5,"median":25.7,"p75":27.4,"status":"CRISIS ROUTE"},"Overland Truck":{"shipments":13,"weight":308.2,"cargoValue":892667.9299999999,"revenue":137118.16,"recognizedRevenue":137118.16,"freight":74981.38,"fuel":91643.91,"insurance":6963.97,"penalty":462.19000000000005,"cost":174051.45,"margin":-36933.29000000001,"marginPct":-0.2693537457037055,"costPerTon":564.7353990914991,"revenuePerTon":444.89993510707336,"cargoValuePerTon":2896.3917261518495,"freightPerTon":243.28805970149256,"fuelPerTon":297.3520765736535,"insurancePerTon":22.59561972744971,"penaltyPerTon":1.4996430889033097,"avgDelay":0.15384615384615385,"difot":1,"p25":21.8,"median":23.9,"p75":26,"status":"CRISIS ROUTE"},"Held in Gulf":{"shipments":14,"weight":352.8,"cargoValue":1021142.57,"revenue":150292.51,"recognizedRevenue":0,"freight":3063.41,"fuel":37512,"insurance":18400.57,"penalty":142692.51,"cost":201668.49,"margin":-51375.97999999998,"marginPct":-0.3418399226947502,"costPerTon":571.6227040816326,"revenuePerTon":425.99917800453517,"cargoValuePerTon":2894.3950396825394,"freightPerTon":8.68313492063492,"fuelPerTon":106.3265306122449,"insurancePerTon":52.15581065759637,"penaltyPerTon":404.4572278911565,"avgDelay":24.071428571428573,"difot":0,"p25":21.949999999999996,"median":25.75,"p75":29.174999999999997,"status":"STATE / NOT A ROUTE"}}},"front":{"Crude Oil":{"Cape of Good Hope":{"cheapest":"Cape of Good Hope","premium":0,"premiumPctCargo":0,"daysSaved":0,"premiumPerDay":null,"pareto":"NON-DOMINATED","dominatedBy":""},"Pipeline Bypass":{"cheapest":"Cape of Good Hope","premium":16.856883023594236,"premiumPctCargo":0.242245793413169,"daysSaved":-0.5,"premiumPerDay":null,"pareto":"DOMINATED","dominatedBy":"Cape of Good Hope"}},"Refined Petrochemicals":{"Cape of Good Hope":{"cheapest":"Cape of Good Hope","premium":0,"premiumPctCargo":0,"daysSaved":0,"premiumPerDay":null,"pareto":"NON-DOMINATED","dominatedBy":""},"Pipeline Bypass":{"cheapest":"Cape of Good Hope","premium":34.65352632968014,"premiumPctCargo":0.36173063660384724,"daysSaved":0.5555555555555556,"premiumPerDay":62.37634739342425,"pareto":"NON-DOMINATED","dominatedBy":""}},"High-Tech Components":{"Overland Truck":{"cheapest":"Overland Truck","premium":0,"premiumPctCargo":0,"daysSaved":0,"premiumPerDay":null,"pareto":"NON-DOMINATED","dominatedBy":""},"Air Bridge":{"cheapest":"Overland Truck","premium":5047.7849117961505,"premiumPctCargo":0.5570985548310913,"daysSaved":0.5,"premiumPerDay":10095.569823592301,"pareto":"NON-DOMINATED","dominatedBy":""}},"Pharmaceuticals":{"Overland Truck":{"cheapest":"Overland Truck","premium":0,"premiumPctCargo":0,"daysSaved":0,"premiumPerDay":null,"pareto":"NON-DOMINATED","dominatedBy":""},"Air Bridge":{"cheapest":"Overland Truck","premium":4858.591184047256,"premiumPctCargo":0.5644882648638193,"daysSaved":0.46153846153846156,"premiumPerDay":10526.947565435721,"pareto":"NON-DOMINATED","dominatedBy":""}},"Consumer Goods":{"Cape of Good Hope":{"cheapest":"Overland Truck","premium":133.14425069996037,"premiumPctCargo":0.10169822116418366,"daysSaved":-1.2272727272727273,"premiumPerDay":null,"pareto":"DOMINATED","dominatedBy":"Overland Truck"},"Overland Truck":{"cheapest":"Overland Truck","premium":0,"premiumPctCargo":0,"daysSaved":0,"premiumPerDay":null,"pareto":"NON-DOMINATED","dominatedBy":""}},"Industrial Machinery":{"Cape of Good Hope":{"cheapest":"Overland Truck","premium":216.45817889015234,"premiumPctCargo":0.07072704305200768,"daysSaved":-2.257918552036199,"premiumPerDay":null,"pareto":"DOMINATED","dominatedBy":"Overland Truck"},"Overland Truck":{"cheapest":"Overland Truck","premium":0,"premiumPctCargo":0,"daysSaved":0,"premiumPerDay":null,"pareto":"NON-DOMINATED","dominatedBy":""}}},"feas":{"Crude Oil":{"Direct (Recovery)":"CASE-VALIDATED","Cape":"CASE-VALIDATED","Pipeline":"CASE-VALIDATED","Overland":"INFEASIBLE","Air":"INFEASIBLE","Continue Hold / Wait":"ONLY IF ALREADY HELD"},"Refined Petrochemicals":{"Direct (Recovery)":"CASE-VALIDATED","Cape":"CASE-VALIDATED","Pipeline":"CASE-VALIDATED","Overland":"INFEASIBLE","Air":"INFEASIBLE","Continue Hold / Wait":"ONLY IF ALREADY HELD"},"High-Tech Components":{"Direct (Recovery)":"CASE-VALIDATED","Cape":"NOT VALIDATED","Pipeline":"INFEASIBLE","Overland":"CASE-VALIDATED","Air":"CASE-VALIDATED","Continue Hold / Wait":"ONLY IF ALREADY HELD"},"Pharmaceuticals":{"Direct (Recovery)":"CASE-VALIDATED","Cape":"NOT VALIDATED","Pipeline":"INFEASIBLE","Overland":"CASE-VALIDATED","Air":"CASE-VALIDATED","Continue Hold / Wait":"ONLY IF ALREADY HELD"},"Consumer Goods":{"Direct (Recovery)":"CASE-VALIDATED","Cape":"CASE-VALIDATED","Pipeline":"INFEASIBLE","Overland":"CASE-VALIDATED","Air":"NOT VALIDATED","Continue Hold / Wait":"ONLY IF ALREADY HELD"},"Industrial Machinery":{"Direct (Recovery)":"CASE-VALIDATED","Cape":"CASE-VALIDATED","Pipeline":"INFEASIBLE","Overland":"CASE-VALIDATED","Air":"NOT VALIDATED","Continue Hold / Wait":"ONLY IF ALREADY HELD"}}};
+const routeToCase={"Direct (Recovery)":"Direct (Pre-Blockade)","Cape":"Cape of Good Hope","Pipeline":"Pipeline Bypass","Overland":"Overland Truck","Air":"Air Bridge"};
+const el=id=>document.getElementById(id);
+const fmtMoney=v=>Number.isFinite(v)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(v):'—';
+const fmtNum=(v,d=1)=>Number.isFinite(v)?v.toLocaleString('en-US',{maximumFractionDigits:d}):'—';
+const fmtPct=v=>Number.isFinite(v)?(v*100).toFixed(1)+'%':'—';
+let currentLens='balanced';
+
+function customerNames(){return Object.keys(DATA.customers).sort((a,b)=>DATA.customers[b].concentration-DATA.customers[a].concentration);}
+function initCustomers(){el('customer').innerHTML=customerNames().map(x=>`<option>${x}</option>`).join(''); loadCustomer();}
+function loadCustomer(){
+  const c=DATA.customers[el('customer').value], p=c.product;
+  el('product').value=p;
+  el('topCustomer').textContent=el('customer').value;
+  el('topSince').textContent='Customer since '+c.since;
+  el('topProduct').textContent=p;
+  el('storyConc').textContent=fmtPct(c.concentration)+' share';
+  el('topTier').textContent=c.tier;
+  el('topMargin').textContent=fmtMoney(c.margin);
+  el('topMarginPct').textContent='Economic margin '+fmtPct(c.marginPct);
+  el('topService').textContent=fmtPct(c.difot)+' DIFOT';
+  el('topDelay').textContent=fmtNum(c.avgDelay,2)+' d avg delay';
+  el('topRAR').textContent=fmtMoney(c.rar);
+  // Default shipment fields from direct benchmark if available, else any observed route
+  const prod=DATA.econ[p]; let ref=prod['Direct (Pre-Blockade)']||Object.values(prod)[0];
+  el('weight').value=Math.round(ref.median||ref.weight/ref.shipments||0);
+  el('cargoValue').value=Math.round((ref.cargoValuePerTon||0)*Number(el('weight').value));
+  el('revenue').value=Math.round((ref.revenuePerTon||0)*Number(el('weight').value));
+  renderRoutes(); updateBand();
+}
+const ROUTE_INFO={
+  'Direct (Recovery)':'Recovery-only: restores normal-state economics only after corridor, security and insurance clearance are confirmed.',
+  'Cape':'Qualitative advantage: avoids the disrupted chokepoint while retaining maritime scale; useful when surface alternatives are capacity-constrained or unsuitable.',
+  'Pipeline':'Qualitative advantage: bypasses the maritime chokepoint through a land-based bulk-liquid corridor; useful when Cape capacity/continuity is constrained and pipeline capacity is confirmed.',
+  'Overland':'Qualitative advantage: flexible, quickly deployable road capacity; useful for smaller compatible cargo when sea routing is too slow and Air is too expensive.',
+  'Air':'Qualitative advantage: maximum speed and surface-network bypass; useful for urgent, high-value / low-weight cargo when the cost of delay is exceptionally high.',
+  'Continue Hold / Wait':'Qualitative advantage: preserves optionality and avoids committing to an expensive reroute immediately; useful only when expected waiting cost remains below intervention cost.'
+};
+
+function premiumQualitative(route, product, x, cheapest){
+  if(route==='Pipeline'){
+    if(product==='Crude Oil'){
+      return 'Potential upside: maritime-chokepoint bypass and access to a different corridor if Cape capacity becomes unavailable or severely constrained. In the current Crude case data, Pipeline shows no measured speed or DIFOT advantage over Cape, so the premium is not supported by observed service performance.';
+    }
+    if(product==='Refined Petrochemicals'){
+      return 'Potential upside: maritime-chokepoint bypass plus a different bulk-liquid corridor. In this case, Pipeline is observed to be modestly faster than Cape, so the premium can buy time only when that time or capacity continuity is worth more than the extra spend.';
+    }
+    return 'Potential upside: corridor diversification for compatible bulk liquids, subject to confirmed capacity and operational availability.';
+  }
+  if(route==='Air'){
+    if(product==='Pharmaceuticals'){
+      return 'Potential upside: fastest case-observed movement and independence from road/sea congestion. Use when service urgency is exceptional and management can justify the premium against the value of avoiding delay; the case does not provide a monetary stock-out value.';
+    }
+    if(product==='High-Tech Components'){
+      return 'Potential upside: fastest case-observed movement and surface-network bypass. Use when delay threatens a critical production/service requirement and management validates that the avoided consequence exceeds the premium.';
+    }
+    return 'Potential upside: maximum speed and surface-network bypass for urgent, high-value / low-weight cargo.';
+  }
+  if(route==='Overland'){
+    return 'Potential upside: flexible road routing, rapid deployment and reduced dependence on maritime corridors. It is useful when cargo is road-compatible, border capacity is available, and management needs faster service without paying an Air premium.';
+  }
+  if(route==='Cape'){
+    if(product==='Consumer Goods' || product==='Industrial Machinery'){
+      return 'Potential upside: maritime scalability and reduced dependence on road-border capacity. It can become relevant if Overland capacity, border access or equipment availability becomes constrained, even though the current case metrics favor Overland.';
+    }
+    return 'Potential upside: avoids the disrupted chokepoint while preserving large-scale maritime movement. It is generally useful when Direct/Hormuz is unavailable and cargo can tolerate the longer sea route.';
+  }
+  if(route==='Direct (Recovery)'){
+    return 'Potential upside: return to the historical normal-state corridor and economics, but only after access, security and insurance are explicitly confirmed. It should not be treated as a crisis route by default.';
+  }
+  if(route==='Continue Hold / Wait'){
+    return 'Potential upside: avoids committing immediately to a costly alternative and preserves flexibility if reopening is expected soon. The benefit disappears as penalty, service and revenue-timing exposure accumulate.';
+  }
+  return 'Qualitative benefit requires management validation.';
+}
+function renderRoutes(){
+  const p=el('product').value, status=el('status').value;
+  const f=DATA.feas[p]||{};
+  const options=['Direct (Recovery)','Cape','Pipeline','Overland','Air'];
+  let html='';
+  for(const o of options){
+    const s=f[o]||'NOT VALIDATED';
+    const show=s==='CASE-VALIDATED';
+    const cls=s==='CASE-VALIDATED'?'green':s==='INFEASIBLE'?'red':'amber';
+    html+=`<div class="route"><div class="route-head"><div><h3>${o}</h3><small><span class="tag ${cls}">${s}</span></small></div>${show?`<div class="toggle"><input type="checkbox" class="routeCheck" data-route="${o}" checked><input type="range" class="capRange" data-route="${o}" min="0" max="100" value="100" style="width:95px"></div>`:''}</div><div class="note" style="margin-top:7px">${ROUTE_INFO[o]||''}</div></div>`;
+  }
+  if(status==='held') html+=`<div class="route"><div class="route-head"><div><h3>Continue Hold / Wait</h3><small><span class="tag amber">STATE OPTION</span></small></div><div class="toggle"><input type="checkbox" class="routeCheck" data-route="Continue Hold / Wait" checked></div></div><div class="note" style="margin-top:7px">${ROUTE_INFO['Continue Hold / Wait']}</div></div>`;
+  el('routes').innerHTML=html;
+}
+function updateBand(){
+  const p=el('product').value, w=Number(el('weight').value), pool=Number(el('pool').value||0);
+  const routes=Object.values(DATA.econ[p]||{}).filter(x=>x.status==='CRISIS ROUTE');
+  if(!routes.length){el('band').textContent='—';el('readiness').textContent='—';return;}
+  const lows=routes.map(x=>x.p25).filter(Number.isFinite), meds=routes.map(x=>x.median).filter(Number.isFinite), highs=routes.map(x=>x.p75).filter(Number.isFinite);
+  const p25=Math.min(...lows), med=statisticsMedian(meds), p75=Math.max(...highs);
+  el('band').textContent=fmtNum(p25,0)+' – '+fmtNum(p75,0)+' t';
+  const total=w+pool;
+  let r=total<p25?'UNDER-SIZED / CONSOLIDATE':total>p75?'LARGE PARCEL / CAPACITY CHECK':'NORMAL OBSERVED BAND';
+  el('readiness').textContent=r;
+}
+function statisticsMedian(arr){const a=[...arr].sort((x,y)=>x-y),n=a.length;if(!n)return NaN;return n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2;}
+function gatePass(){return el('safe').checked&&el('sanctions').checked&&el('insurance').checked&&el('cargoComp').checked;}
+function normalize(vals, higherBetter=true){
+  const finite=vals.filter(Number.isFinite); if(!finite.length)return vals.map(_=>.5);
+  const min=Math.min(...finite),max=Math.max(...finite); if(max===min)return vals.map(_=>.5);
+  return vals.map(v=>Number.isFinite(v)?(higherBetter?(v-min)/(max-min):(max-v)/(max-min)):.5);
+}
+function getWeights(){
+  const m={balanced:{margin:.30,difot:.20,delay:.15,cash:.10,premium:.10,pareto:.15},profit:{margin:.50,difot:.10,delay:.05,cash:.10,premium:.15,pareto:.10},service:{margin:.15,difot:.35,delay:.30,cash:.05,premium:.05,pareto:.10},resilience:{margin:.20,difot:.20,delay:.15,cash:.10,premium:.10,pareto:.25},cash:{margin:.25,difot:.10,delay:.10,cash:.30,premium:.15,pareto:.10}};return m[currentLens];
+}
+function run(){
+  const c=DATA.customers[el('customer').value], p=c.product, W=Number(el('weight').value), CV=Number(el('cargoValue').value), Rev=Number(el('revenue').value);
+  if(!gatePass()){showDecision('STOP — hard gate failed','No route should proceed until security, sanctions, insurance and cargo/regulatory clearance all pass.');return;}
+  if(!(W>0&&CV>=0&&Rev>=0)){showDecision('Check shipment inputs','Cargo weight must be positive and commercial values cannot be negative.');return;}
+  const fs=Number(el('freightShock').value)/100, fus=Number(el('fuelShock').value)/100, ins=Number(el('insShock').value)/100, extraDelay=Number(el('delayShock').value), pass=Number(el('pass').value)/100;
+  const selected=[...document.querySelectorAll('.routeCheck:checked')].map(x=>x.dataset.route);
+  let results=[];
+  for(const rlabel of selected){
+    if(rlabel==='Continue Hold / Wait'){
+      if(el('status').value!=='held')continue;
+      const days=Math.max(0,Number(el('heldDays').value||0));
+      const futureDays=Math.max(1,extraDelay||7);
+      const dailyPenalty=.006*CV; // case-implied old simulator rule; explicit and visible
+      const cost=dailyPenalty*futureDays;
+      results.push({route:rlabel,cost,cpt:cost/W,rev:Rev,margin:Rev-cost,marginPct:Rev?((Rev-cost)/Rev):NaN,difot:0,delay:days+futureDays,premiumPct:cost/CV,premPerDay:cost/W/futureDays,pareto:'STATE',cash:Rev*(days+futureDays),capacity:1});
+      continue;
+    }
+    const caseRoute=routeToCase[rlabel], e=DATA.econ[p]?.[caseRoute]; if(!e)continue;
+    const capEl=[...document.querySelectorAll('.capRange')].find(x=>x.dataset.route===rlabel);
+    const cap=capEl?Number(capEl.value)/100:1; if(cap<=0)continue;
+    const costPerTon=e.freightPerTon*(1+fs)+e.fuelPerTon*(1+fus)+e.insurancePerTon*(1+ins)+e.penaltyPerTon;
+    const cost=costPerTon*W;
+    const direct=DATA.econ[p]?.['Direct (Pre-Blockade)'];
+    const baseCpt=direct?direct.costPerTon:e.costPerTon;
+    const incr=Math.max(0,(costPerTon-baseCpt)*W);
+    const revised=Rev+incr*pass;
+    const margin=revised-cost, marginPct=revised?margin/revised:NaN;
+    const delay=(e.avgDelay||0)+extraDelay;
+    const cash=revised*delay;
+    const cheapest=DATA.front[p]?.[caseRoute];
+    results.push({route:rlabel,cost,cpt:costPerTon,rev:revised,margin,marginPct,difot:e.difot,delay,premiumPct:cheapest?.premiumPctCargo??0,premPerDay:cheapest?.premiumPerDay??NaN,pareto:cheapest?.pareto||'N/A',cash,capacity:cap});
+  }
+  if(!results.length){showDecision('No executable alternative','No case-validated route with positive capacity is currently available.');return;}
+  // Dynamic domination on scenario outputs
+  for(const a of results){if(a.route==='Continue Hold / Wait')continue;a.dynamicDominated=false;for(const b of results){if(a===b||b.route==='Continue Hold / Wait')continue;const be=b.cost<=a.cost&&b.marginPct>=a.marginPct&&b.difot>=a.difot&&b.delay<=a.delay;const st=b.cost<a.cost||b.marginPct>a.marginPct||b.difot>a.difot||b.delay<a.delay;if(be&&st){a.dynamicDominated=true;a.domBy=b.route;break;}}}
+  const marginScores=normalize(results.map(x=>x.marginPct),true), difotScores=normalize(results.map(x=>x.difot),true), delayScores=normalize(results.map(x=>x.delay),false), cashScores=normalize(results.map(x=>x.cash),false), premScores=normalize(results.map(x=>x.premiumPct),false);
+  const wt=getWeights();
+  results.forEach((x,i)=>{const pareto=(x.dynamicDominated?0:1);x.score=wt.margin*marginScores[i]+wt.difot*difotScores[i]+wt.delay*delayScores[i]+wt.cash*cashScores[i]+wt.premium*premScores[i]+wt.pareto*pareto;});
+  results.sort((a,b)=>b.score-a.score);
+  renderResults(results,c,p,W,CV);
+}
+function renderResults(rs,c,p,W,CV){
+  el('scenarioLine').textContent=`${el('customer').value} · ${p} · ${currentLens.toUpperCase()} lens · ${el('pass').value}% pass-through · ${el('readiness').textContent}`;
+
+  // Cheapest feasible route is the baseline for premium logic.
+  const physical = rs.filter(x=>x.route!=='Continue Hold / Wait');
+  const cheapest = (physical.length?physical:rs).reduce((a,b)=>a.cost<=b.cost?a:b);
+
+  rs.forEach(x=>{
+    x.extraSpend = Math.max(0, x.cost - cheapest.cost);
+    x.daysSaved = cheapest.delay - x.delay;
+    x.difotUplift = x.difot - cheapest.difot;
+    x.breakEvenTimeValue = (x.extraSpend>0 && x.daysSaved>0) ? x.extraSpend/x.daysSaved : NaN;
+
+    if(x.extraSpend<=1){
+      x.premiumBuys = 'Reference / lowest-cost feasible option';
+      x.premiumDecision = 'REFERENCE';
+    } else {
+      const gains=[];
+      if(x.daysSaved>0.0001) gains.push(`${x.daysSaved.toFixed(2)} d faster`);
+      if(x.difotUplift>0.0001) gains.push(`${(x.difotUplift*100).toFixed(1)} pp DIFOT uplift`);
+      if(!gains.length) gains.push('No measured time or DIFOT gain');
+
+      x.premiumBuys = gains.join(' + ');
+
+      if(x.dynamicDominated || (x.daysSaved<=0 && x.difotUplift<=0)){
+        x.premiumDecision = 'NOT JUSTIFIED';
+      } else {
+        x.premiumDecision = 'CONDITIONAL';
+      }
+    }
+  });
+
+  const tbody=el('resultTable').querySelector('tbody');
+  tbody.innerHTML=rs.map(x=>`<tr>
+    <td><b>${x.route}</b></td>
+    <td>${fmtMoney(x.cost)}</td>
+    <td>${fmtMoney(x.cpt)}</td>
+    <td>${fmtMoney(x.rev)}</td>
+    <td>${fmtMoney(x.margin)}</td>
+    <td>${fmtPct(x.marginPct)}</td>
+    <td>${fmtPct(x.difot)}</td>
+    <td>${fmtNum(x.delay,2)} d</td>
+    <td>${fmtPct(x.premiumPct)}</td>
+    <td style="text-align:left;white-space:normal;min-width:190px">${x.premiumBuys}</td>
+    <td>${Number.isFinite(x.breakEvenTimeValue)?fmtMoney(x.breakEvenTimeValue)+'/day':'—'}</td>
+    <td><b>${x.premiumDecision}</b></td>
+    <td>${x.dynamicDominated?'DOMINATED':x.pareto}</td>
+    <td>${x.score.toFixed(2)}</td>
+  </tr>`).join('');
+
+  const best=rs[0], second=rs[1];
+  let why=`${best.route} has the strongest relative position under the ${currentLens} lens after hard feasibility gates.`;
+  if(best.dynamicDominated)why+=' Warning: it is dynamically dominated on measured scenario metrics.';
+  let opp=second?` Choosing ${best.route} instead of ${second.route} changes cost by ${fmtMoney(best.cost-second.cost)} and delay by ${(best.delay-second.delay).toFixed(2)} days.`:'';
+  let strat=c.tier==='STRATEGIC CORE'?` Customer is Strategic Core at ${fmtPct(c.concentration)} of portfolio revenue; protect the relationship, but do not use concentration to justify a dominated route.`:` Customer is Long Tail; scarce capacity should only be consumed if service/economic value warrants it.`;
+  showDecision(`Recommended management action: ${best.route}`,why+opp+strat);
+
+  const premiumRoutes = rs.filter(x=>x.extraSpend>1);
+  let panel='<h3>What are we buying with the premium?</h3>';
+  if(!premiumRoutes.length){
+    panel += '<div class="note">No selected alternative carries a premium versus the cheapest feasible route.</div>';
+  } else {
+    const secondaryPremium=[...premiumRoutes].sort((a,b)=>b.score-a.score)[0];
+    const qual=premiumQualitative(secondaryPremium.route,p,secondaryPremium,cheapest);
+    panel += `<div style="padding:10px 12px;margin-bottom:9px;border:1px solid #d9dee5;border-radius:10px;background:#fff">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800">Secondary premium option</div>
+      <div style="font-size:17px;font-weight:900;margin-top:3px">${secondaryPremium.route}</div>
+      <div class="note" style="margin-top:5px"><b>What could the premium buy?</b> ${qual}</div>
+      <div class="note" style="margin-top:5px"><b>Case-measured gain:</b> ${secondaryPremium.premiumBuys}. <b>Extra spend:</b> ${fmtMoney(secondaryPremium.extraSpend)}.</div>
+    </div>`;
+    panel += `<div class="note">Baseline for premium comparison: <b>${cheapest.route}</b> at ${fmtMoney(cheapest.cost)}. Qualitative benefits below are operating considerations only; they are not assigned invented monetary values.</div>`;
+    panel += '<div class="table-wrap"><table><thead><tr><th>Premium option</th><th>Extra spend</th><th>Case-measured gain</th><th>Route-specific qualitative upside</th><th>Break-even value of time</th><th>Decision</th></tr></thead><tbody>';
+    panel += premiumRoutes.map(x=>{
+      const routeQual=premiumQualitative(x.route,p,x,cheapest);
+      let interp;
+      if(x.premiumDecision==='NOT JUSTIFIED'){
+        interp='NOT JUSTIFIED on current measured case dimensions; reconsider only if capacity, access or another validated constraint changes.';
+      } else if(Number.isFinite(x.breakEvenTimeValue)){
+        interp=`CONDITIONAL — management should pay the premium only if the validated value of the time/service protected exceeds ${fmtMoney(x.breakEvenTimeValue)} per day saved.`;
+      } else {
+        interp='CONDITIONAL — qualitative upside exists, but the case does not monetize it. Management validation is required.';
+      }
+      return `<tr>
+        <td><b>${x.route}</b></td>
+        <td>${fmtMoney(x.extraSpend)}</td>
+        <td style="text-align:left;white-space:normal;min-width:160px">${x.premiumBuys}</td>
+        <td style="text-align:left;white-space:normal;min-width:330px">${routeQual}</td>
+        <td>${Number.isFinite(x.breakEvenTimeValue)?fmtMoney(x.breakEvenTimeValue)+'/day':'—'}</td>
+        <td style="text-align:left;white-space:normal;min-width:250px">${interp}</td>
+      </tr>`;
+    }).join('');
+    panel += '</tbody></table></div>';
+  }
+  el('premiumPanel').innerHTML=panel;
+}
+function showDecision(title,text){el('decision').innerHTML=`<h3>${title}</h3><div>${text}</div><div class="note" style="margin-top:6px">Recommendation is conditional on the scenario inputs and observed case benchmarks; it is not a universal route ranking.</div>`;}
+function bind(){
+  el('customer').addEventListener('change',loadCustomer);
+  el('status').addEventListener('change',()=>{el('heldBox').classList.toggle('hidden',el('status').value!=='held');renderRoutes();});
+  for(const id of ['weight','pool'])el(id).addEventListener('input',updateBand);
+  for(const [id,out,suf] of [['pass','passVal','%'],['freightShock','freightVal','%'],['fuelShock','fuelVal','%'],['insShock','insVal','%'],['delayShock','delayVal',' d']]) el(id).addEventListener('input',()=>el(out).textContent=el(id).value+suf);
+  el('lens').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{el('lens').querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentLens=b.dataset.lens;}));
+  el('run').addEventListener('click',run);
+}
+bind(); initCustomers();
+</script>
+</body></html>
